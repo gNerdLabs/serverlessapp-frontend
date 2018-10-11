@@ -1,0 +1,12 @@
+---
+Type: "AWS::Route53::RecordSet"
+Properties:
+  AliasTarget:
+    DNSName:
+      Fn::GetAtt:
+        - CloudFrontDistribution
+        - DomainName
+    HostedZoneId: ${file(config.${self:provider.stage}.yml):hostedZoneId}
+  HostedZoneName: ${file(config.${self:provider.stage}.yml):hostedZoneName}.
+  Name: www.serverlessapp.net.
+  Type: 'A'

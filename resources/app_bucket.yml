@@ -1,0 +1,8 @@
+---
+Type: AWS::S3::Bucket
+Properties:
+  BucketName: ${file(config.${self:provider.stage}.yml):s3Bucket}
+  AccessControl: PublicRead
+  WebsiteConfiguration:
+    IndexDocument: index.html
+    ErrorDocument: index.html

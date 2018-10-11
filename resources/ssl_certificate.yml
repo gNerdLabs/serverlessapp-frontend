@@ -1,0 +1,12 @@
+---
+Type: AWS::CertificateManager::Certificate
+Properties:
+  DomainName: ${file(config.${self:provider.stage}.yml):domainName}
+  SubjectAlternativeNames:
+    - www.serverlessapp.net
+  ValidationMethod: DNS
+  DomainValidationOptions:
+  - DomainName: ${file(config.${self:provider.stage}.yml):domainName}
+    ValidationDomain: ${file(config.${self:provider.stage}.yml):hostedZoneName}
+  - DomainName: www.serverlessapp.net
+    ValidationDomain: ${file(config.${self:provider.stage}.yml):hostedZoneName}

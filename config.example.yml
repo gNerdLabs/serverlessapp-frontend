@@ -1,0 +1,17 @@
+---
+rev: 001
+
+domainName: serverlessapp.net
+cfAliases:
+  - serverlessapp.net
+  - www.serverlessapp.net
+
+cleanName: serverlessapp-frontend
+appName: ${self:custom.cleanName}-app-rev${self:custom.rev}
+s3Bucket: ${self:custom.cleanName}-www-rev${self:custom.rev}
+
+hostedZoneName: serverlessapp.net
+hostedZoneId: Z2FDTNDATAQYW2 
+
+runtime: nodejs8.10
+profile: serverless-admin
