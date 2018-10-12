@@ -3,19 +3,19 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.5.0 -->
-<title>Part 9 - DNS | ServerlessApp.net</title>
+<title>Part 9 - DNS? - INCOMPLETE | ServerlessApp.net</title>
 <meta name="generator" content="Jekyll v3.8.4" />
-<meta property="og:title" content="Part 9 - DNS" />
+<meta property="og:title" content="Part 9 - DNS? - INCOMPLETE" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="before we deploy again we should add out dns records to point or domain names to the cf distribution." />
 <meta property="og:description" content="before we deploy again we should add out dns records to point or domain names to the cf distribution." />
-<link rel="canonical" href="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-9.html" />
-<meta property="og:url" content="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-9.html" />
+<link rel="canonical" href="http://localhost:4000/serverless/frontend/2018/10/11/09-DNS.html" />
+<meta property="og:url" content="http://localhost:4000/serverless/frontend/2018/10/11/09-DNS.html" />
 <meta property="og:site_name" content="ServerlessApp.net" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2018-10-11T14:49:07-04:00" />
 <script type="application/ld+json">
-{"url":"http://localhost:4000/serverless/frontend/2018/10/11/Frontend-9.html","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/serverless/frontend/2018/10/11/Frontend-9.html"},"description":"before we deploy again we should add out dns records to point or domain names to the cf distribution.","headline":"Part 9 - DNS","dateModified":"2018-10-11T14:49:07-04:00","datePublished":"2018-10-11T14:49:07-04:00","@type":"BlogPosting","@context":"http://schema.org"}</script>
+{"url":"http://localhost:4000/serverless/frontend/2018/10/11/09-DNS.html","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/serverless/frontend/2018/10/11/09-DNS.html"},"description":"before we deploy again we should add out dns records to point or domain names to the cf distribution.","headline":"Part 9 - DNS? - INCOMPLETE","dateModified":"2018-10-11T14:49:07-04:00","datePublished":"2018-10-11T14:49:07-04:00","@type":"BlogPosting","@context":"http://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="ServerlessApp.net" /></head>
 <body><header class="site-header" role="banner">
@@ -38,14 +38,15 @@
         <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
 
   <header class="post-header">
-    <h1 class="post-title p-name" itemprop="name headline">Part 9 - DNS</h1>
+    <h1 class="post-title p-name" itemprop="name headline">Part 9 - DNS? - INCOMPLETE</h1>
     <p class="post-meta">
       <time class="dt-published" datetime="2018-10-11T14:49:07-04:00" itemprop="datePublished">Oct 11, 2018
       </time></p>
   </header>
 
   <div class="post-content e-content" itemprop="articleBody">
-    <p>before we deploy again we should add out dns records to point or domain names to the cf distribution.</p>
+    <p><img style="float: right; padding:10px 0 10px 10px" src="/images/dns.jpg" />
+before we deploy again we should add out dns records to point or domain names to the cf distribution.</p>
 
 <p>we’re gonna do one resource for each domain.</p>
 
@@ -105,9 +106,41 @@ DnsRecord: ${file(resources/dns_record.yml)}
 DnsRecord2: ${file(resources/dns_record.2.yml)}
 </code></pre></div></div>
 
+<p>we’re also going to add one new section to our resources block. This is to make some data available to our plugin we installed earlier.</p>
+
+<p>add</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Outputs:
+  CloudFrontDistributionOutput:
+    Value:
+      Fn::GetAtt:
+        - CloudFrontDistribution
+        - DomainName
+</code></pre></div></div>
+
+<p>so now your resources block should look like this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>resources:
+  Resources:
+    AppS3Bucket: ${file(resources/app_bucket.yml)}
+    AppS3BucketPolicy: ${file(resources/app_bucket_policy.yml)}
+    StaticSiteCert: ${file(resources/ssl_certificate.yml)}
+    CloudFrontDistribution: ${file(resources/cf_distro.yml)}
+    DnsRecord: ${file(resources/dns_record.yml)}
+    DnsRecord2: ${file(resources/dns_record.2.yml)}
+
+  Outputs:
+    CloudFrontDistributionOutput:
+      Value:
+        Fn::GetAtt:
+          - CloudFrontDistribution
+          - DomainName
+</code></pre></div></div>
 <p>deploy now…</p>
 
-  </div><a class="u-url" href="/serverless/frontend/2018/10/11/Frontend-9.html" hidden></a>
+<p align="center"><a href="/serverless/frontend/2018/10/11/10-draw-the-rest-of-the-fucking-owl.html">Continue to Part 10</a></p>
+
+  </div><a class="u-url" href="/serverless/frontend/2018/10/11/09-DNS.html" hidden></a>
 </article>
 
       </div>

@@ -3,19 +3,19 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.5.0 -->
-<title>Part 2 - A place for everything and everything in its place | ServerlessApp.net</title>
+<title>Frontend 02 - A place for everything and everything in its place | ServerlessApp.net</title>
 <meta name="generator" content="Jekyll v3.8.4" />
-<meta property="og:title" content="Part 2 - A place for everything and everything in its place" />
+<meta property="og:title" content="Frontend 02 - A place for everything and everything in its place" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="before we go too much further, it may be a good idea to set up a config file… to make changes easier" />
-<meta property="og:description" content="before we go too much further, it may be a good idea to set up a config file… to make changes easier" />
+<meta name="description" content="Before we go too much further, it may be a good idea to set up an app configuration scheme… to make changes easier." />
+<meta property="og:description" content="Before we go too much further, it may be a good idea to set up an app configuration scheme… to make changes easier." />
 <link rel="canonical" href="http://localhost:4000/serverless/frontend/2018/10/11/02-a-place-for-everything.html" />
 <meta property="og:url" content="http://localhost:4000/serverless/frontend/2018/10/11/02-a-place-for-everything.html" />
 <meta property="og:site_name" content="ServerlessApp.net" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2018-10-11T14:49:14-04:00" />
 <script type="application/ld+json">
-{"url":"http://localhost:4000/serverless/frontend/2018/10/11/02-a-place-for-everything.html","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/serverless/frontend/2018/10/11/02-a-place-for-everything.html"},"description":"before we go too much further, it may be a good idea to set up a config file… to make changes easier","headline":"Part 2 - A place for everything and everything in its place","dateModified":"2018-10-11T14:49:14-04:00","datePublished":"2018-10-11T14:49:14-04:00","@type":"BlogPosting","@context":"http://schema.org"}</script>
+{"url":"http://localhost:4000/serverless/frontend/2018/10/11/02-a-place-for-everything.html","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/serverless/frontend/2018/10/11/02-a-place-for-everything.html"},"description":"Before we go too much further, it may be a good idea to set up an app configuration scheme… to make changes easier.","headline":"Frontend 02 - A place for everything and everything in its place","dateModified":"2018-10-11T14:49:14-04:00","datePublished":"2018-10-11T14:49:14-04:00","@type":"BlogPosting","@context":"http://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="ServerlessApp.net" /></head>
 <body><header class="site-header" role="banner">
@@ -38,35 +38,36 @@
         <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
 
   <header class="post-header">
-    <h1 class="post-title p-name" itemprop="name headline">Part 2 - A place for everything and everything in its place</h1>
+    <h1 class="post-title p-name" itemprop="name headline">Frontend 02 - A place for everything and everything in its place</h1>
     <p class="post-meta">
       <time class="dt-published" datetime="2018-10-11T14:49:14-04:00" itemprop="datePublished">Oct 11, 2018
       </time></p>
   </header>
 
   <div class="post-content e-content" itemprop="articleBody">
-    <p>before we go too much further, it may be a good idea to set up a config file… to make changes easier</p>
+    <p>Before we go too much further, it may be a good idea to set up an app configuration scheme… to make changes easier.</p>
 
-<p>create a new file in your frontend directory named `config.dev.yml’  we’re going to add a bunch of custom configuration values in here.</p>
+<p>Start by creating a new file in your frontend directory named `config.dev.yml’ we’re going to add a bunch of custom configuration values in here.</p>
 
-<p>we’re setting up this config for the “dev” environment so lets start using a stage value. Add this to the provider block:</p>
+<p>We’ll also introduce the <code class="highlighter-rouge">stage</code> concept here… We wont get too much into that in this tutorial as we’re essentially building this straight to production. In the future as we do more it will be easier to have multiple stages if we build it in now.</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>stage: ${opt:stage, 'dev'}
+<p>We’re setting up this config for the “dev” environment so add this to the provider block:</p>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">stage</span><span class="pi">:</span> <span class="s">${opt:stage, 'dev'}</span>
 </code></pre></div></div>
 
-<p>if a stage is provided in the command line it will use that, it will default to dev when not provided.</p>
+<p>If a stage is provided to serverless in the command line options, it will use the one provided, it will default to <code class="highlighter-rouge">dev</code> when nothing is provided.</p>
 
-<p>now we need to tell serverless to load our file.</p>
+<p>Now we need to tell serverless to load our configuration file.</p>
 
-<p>add the following to your main yml file:</p>
+<p>Add the following to your main yml file:</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>custom: ${file(config.${self:provider.stage}.yml)}
 </code></pre></div></div>
 
-<p>I make this the first line of mine so it now looks something like this:</p>
+<p>I usually make this the first line of my <code class="highlighter-rouge">serverless.yml</code> file so it now looks something like this:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>---
-custom: ${file(config.${self:provider.stage}.yml)}
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>custom: ${file(config.${self:provider.stage}.yml)}
 
 provider:
   name: aws
@@ -78,16 +79,15 @@ service: serverlessapp-frontend
 ...
 </code></pre></div></div>
 
-<p>you can now see how the file import works. ${self:provider.stage} is set to <code class="highlighter-rouge">dev</code> by default so it loads config.dev.yml in as the value for the <code class="highlighter-rouge">custom</code> block.</p>
+<p>You shoul dbe able to see how the file import works. ${self:provider.stage} is set to <code class="highlighter-rouge">dev</code> by default so it loads <code class="highlighter-rouge">config.dev.yml</code> in as the value for the <code class="highlighter-rouge">custom</code> block.</p>
 
-<p>(note: Scope for <code class="highlighter-rouge">self</code> gats a little odd the way I have this set up. its easiest to think of <code class="highlighter-rouge">self</code> as being at the main serverless.yml file root.)</p>
+<p><em>*note: Scope for <code class="highlighter-rouge">self</code> gets a little odd the way I have this set up. It’s easiest to just think of <code class="highlighter-rouge">self</code> as being at the main <code class="highlighter-rouge">serverless.yml</code> file root.</em></p>
 
-<p>so, lets set up our config now</p>
+<p>So, lets set up our config now…</p>
 
-<p>add the following to your config.dev.yml:</p>
+<p>Add the following to your config.dev.yml:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>---
-rev: 001
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rev: 001
 domainName: serverlessapp.net
 cleanName: serverlessapp-frontend
 appName: ${self:custom.cleanName}-app-rev${self:custom.rev}
@@ -95,34 +95,44 @@ runtime: nodejs8.10
 profile: serverless-admin
 
 </code></pre></div></div>
-<p><code class="highlighter-rouge">rev</code> will be a somewhat arbitrary value we can use to tell what revision we are working on. Sometimes if a build or a remove fails it can leave remnantes that block us from reusing the exact app name again (at least until the system clears them out… which can take a while)  this is a habndy way to change the name of our next deploy so we dont have to wait.</p>
 
-<p><code class="highlighter-rouge">domainName</code> should be pretty self explanatory</p>
+<ul>
+  <li>
+    <p><code class="highlighter-rouge">rev</code> will be a somewhat arbitrary value we can use to tell what revision we are working on. Sometimes if a build or a remove fails it can leave remnantes that block us from reusing the exact app name again (at least until the system clears them out… which can take a while)  this is a habndy way to change the name of our next deploy so we dont have to wait.</p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">domainName</code> should be pretty self explanatory</p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">cleanName</code> is the base name for our app that all other names will be based off of, in this example we will use the vaule we previously had for <code class="highlighter-rouge">service</code> in the main yml file: serverlessapp-frontend</p>
+  </li>
+</ul>
 
-<p><code class="highlighter-rouge">cleanName</code> is the base name for our app that all other names will be based off of, in this example we will use the vaule we previously had for <code class="highlighter-rouge">service</code> in the main yml file: serverlessapp-frontend</p>
+<p><em>*More on the note about scope from above…</em></p>
 
-<p>More on the note about scope from above…</p>
+<p><em>Since we are accessing these config values from within the main file as <code class="highlighter-rouge">custom</code>, we do <code class="highlighter-rouge">self:custom</code> and then reference whichever value we want. This is instead of what might seem more intuitive to some… ${self:cleanName} or something like that.</em></p>
 
-<p>since we are accessing these config values from within the main file as <code class="highlighter-rouge">custom</code>, we do <code class="highlighter-rouge">self:custom</code> and then whichever value we want. This is instead of what might seem more intuitive to some… ${self:cleanName} or somethin glike that.</p>
+<p><em>So to reference our custom values we use the following: <code class="highlighter-rouge">${self:custom.cleanName}</code> even when <code class="highlighter-rouge">custom</code> does not exist in the immediate file.</em></p>
 
-<p>so to reference our custon values we use the following: ${self:custom.cleanName} even when <code class="highlighter-rouge">custom</code> does not exist in the immediate file.</p>
+<p>This allows us to create the following:</p>
 
-<p>this allows us to create the following:</p>
+<ul>
+  <li>
+    <p><code class="highlighter-rouge">appName</code> comes out (in this example) as <code class="highlighter-rouge">serverlessapp-frontend-app-rev001</code> (how this is used will be more evident later on in the tutorials)</p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">runtime</code> should be set to whatever you previously had in your main file. For this particular frontend application, we wont even be using this so it just needs to be set to something valid.</p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">profile</code> while not strictly necessary is a way to specify which credentials you use for authenticating with aws… if you have multiple sets of credentials for different projects this comes in quite handy</p>
+  </li>
+</ul>
 
-<p><code class="highlighter-rouge">appName</code> comes out (in this example) as <code class="highlighter-rouge">serverlessapp-frontend-app-rev001</code></p>
+<p>Now that we have out config set up we can swap out the parts of our main yml.</p>
 
-<p>how this is used will be more evident later on in the tutorials</p>
+<p>Update your <code class="highlighter-rouge">serverless.yml</code> so it looks like this:</p>
 
-<p><code class="highlighter-rouge">runtime</code> should be set to whatever you previously had in your main file. For this particular frontend application, we wont even be using this so it just needs to be set to something valid.</p>
-
-<p><code class="highlighter-rouge">profile</code> while not strictly necessary is a way to specify which credentials you use for authenticating with aws… if you have multiple sets of credentials for different projects this comes in quite handy</p>
-
-<p>Now that we have out config set up we can swap out the parts of our main yml that we have set up.</p>
-
-<p>update your serverless.yml so it looks like this:</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>---
-custom: ${file(config.${self:provider.stage}.yml)}
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>custom: ${file(config.${self:provider.stage}.yml)}
 
 provider:
   name: aws
@@ -133,15 +143,13 @@ provider:
 service: ${self:custom.appName}
 </code></pre></div></div>
 
-<p>the only addition is the <code class="highlighter-rouge">profile</code> entry.</p>
+<p><em>*note that the <code class="highlighter-rouge">profile</code> entry is a new line</em></p>
 
-<hr />
+<p align="center"><a href="/serverless/frontend/2018/10/11/03-its-this-your-bucket.html">Continue to Part 3</a></p>
 
-<p>“Before, however, Lucy had been an hour in the house she had contrived a place for everything and put everything in its place.”</p>
+<!-- "Before, however, Lucy had been an hour in the house she had contrived a place for everything and put everything in its place."
 
-<ul>
-  <li>The Naughty Girl Won : Religious Tract Society in 1799</li>
-</ul>
+- The Naughty Girl Won : Religious Tract Society in 1799 -->
 
   </div><a class="u-url" href="/serverless/frontend/2018/10/11/02-a-place-for-everything.html" hidden></a>
 </article>

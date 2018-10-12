@@ -3,19 +3,19 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.5.0 -->
-<title>Part 3 - is this your bucket? | ServerlessApp.net</title>
+<title>Frontend 03 - is this your bucket? | ServerlessApp.net</title>
 <meta name="generator" content="Jekyll v3.8.4" />
-<meta property="og:title" content="Part 3 - is this your bucket?" />
+<meta property="og:title" content="Frontend 03 - is this your bucket?" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="Now we can move on to actually creating the s3 bucket." />
-<meta property="og:description" content="Now we can move on to actually creating the s3 bucket." />
-<link rel="canonical" href="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-3.html" />
-<meta property="og:url" content="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-3.html" />
+<meta name="description" content="Now we can move on to creating our s3 bucket." />
+<meta property="og:description" content="Now we can move on to creating our s3 bucket." />
+<link rel="canonical" href="http://localhost:4000/serverless/frontend/2018/10/11/03-its-this-your-bucket.html" />
+<meta property="og:url" content="http://localhost:4000/serverless/frontend/2018/10/11/03-its-this-your-bucket.html" />
 <meta property="og:site_name" content="ServerlessApp.net" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2018-10-11T14:49:13-04:00" />
 <script type="application/ld+json">
-{"url":"http://localhost:4000/serverless/frontend/2018/10/11/Frontend-3.html","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/serverless/frontend/2018/10/11/Frontend-3.html"},"description":"Now we can move on to actually creating the s3 bucket.","headline":"Part 3 - is this your bucket?","dateModified":"2018-10-11T14:49:13-04:00","datePublished":"2018-10-11T14:49:13-04:00","@type":"BlogPosting","@context":"http://schema.org"}</script>
+{"url":"http://localhost:4000/serverless/frontend/2018/10/11/03-its-this-your-bucket.html","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/serverless/frontend/2018/10/11/03-its-this-your-bucket.html"},"description":"Now we can move on to creating our s3 bucket.","headline":"Frontend 03 - is this your bucket?","dateModified":"2018-10-11T14:49:13-04:00","datePublished":"2018-10-11T14:49:13-04:00","@type":"BlogPosting","@context":"http://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="ServerlessApp.net" /></head>
 <body><header class="site-header" role="banner">
@@ -38,66 +38,64 @@
         <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
 
   <header class="post-header">
-    <h1 class="post-title p-name" itemprop="name headline">Part 3 - is this your bucket?</h1>
+    <h1 class="post-title p-name" itemprop="name headline">Frontend 03 - is this your bucket?</h1>
     <p class="post-meta">
       <time class="dt-published" datetime="2018-10-11T14:49:13-04:00" itemprop="datePublished">Oct 11, 2018
       </time></p>
   </header>
 
   <div class="post-content e-content" itemprop="articleBody">
-    <p>Now we can move on to actually creating the s3 bucket.</p>
+    <p><img style="float: right; padding:10px 0 10px 10px" src="/images/bucket.jpg" />
+Now we can move on to creating our s3 bucket.</p>
 
-<p>the s3 bucket is where we’ll store all of our frontend html and whatnot.</p>
+<p><em>This</em> S3 bucket is where we’ll store all of our frontend html and whatnot.</p>
 
-<p>lets add that now.</p>
+<p>Start with naming the bucket…</p>
 
-<p>start with naming the bucket…</p>
-
-<p>add a new value to your config file:</p>
+<p>Add a new value to your config file:</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>s3Bucket: ${self:custom.cleanName}-www-rev${self:custom.rev}
 </code></pre></div></div>
 
-<p>much like <code class="highlighter-rouge">appName</code>, the value of <code class="highlighter-rouge">s3Bucket</code> is computed as <code class="highlighter-rouge">serverlessapp-frontend-www-rev001</code></p>
+<p>Much like <code class="highlighter-rouge">appName</code>, the value of <code class="highlighter-rouge">s3Bucket</code> is computed as <code class="highlighter-rouge">serverlessapp-frontend-www-rev001</code>.</p>
 
-<p>we can now ause that value in out serverless.yml file.  add the following block there:</p>
+<p>We can now use this value in out <code class="highlighter-rouge">serverless.yml</code> file.  Add the following block there:</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>resources:
-Resources:
+  Resources:
     AppS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
+      Type: AWS::S3::Bucket
+      Properties:
         BucketName: ${self:custom.appName}
         AccessControl: PublicRead
         WebsiteConfiguration:
-        IndexDocument: index.html
-        ErrorDocument: index.html
+          IndexDocument: index.html
+          ErrorDocument: index.html
 </code></pre></div></div>
 
-<p>this is our resources block, it’s where we will put all the definition for the components of our app</p>
+<p>This is our resources block, it’s where we will put all the definition for the components of our app.</p>
 
-<p>we have defined a resource clled <code class="highlighter-rouge">AppS3Bucket</code>  the type is standard AWS naming for their S3 service: <code class="highlighter-rouge">AWS::S3::Bucket</code></p>
+<p>We have defined a resource called <code class="highlighter-rouge">AppS3Bucket</code>  the <code class="highlighter-rouge">Type</code> is standard AWS naming for their S3 service: <code class="highlighter-rouge">AWS::S3::Bucket</code></p>
 
-<p>We’ve defined three properties for this resource, BucketName, AccessControl and WebsiteConfiguration.</p>
+<p>We’ve defined three <code class="highlighter-rouge">Properties</code> for this resource: <code class="highlighter-rouge">BucketName</code>, <code class="highlighter-rouge">AccessControl</code> and <code class="highlighter-rouge">WebsiteConfiguration</code>.</p>
 
-<p><code class="highlighter-rouge">BucketName</code> wil be out custom name: <code class="highlighter-rouge">serverlessapp-frontend-www-rev001</code></p>
+<p><code class="highlighter-rouge">BucketName</code> wil be our custom name: <code class="highlighter-rouge">serverlessapp-frontend-www-rev001</code></p>
 
-<p>We are allowing public read since we want this to serve our www assets directly to users. As static www root.</p>
+<p>We are allowing <code class="highlighter-rouge">PublicRead</code> since we want this to serve our www assets directly users. (We’ll create an actual policy for this in the next section) Essentially acting as a static www root.</p>
 
-<p>lastly we need to tell S3 what files to serve by default.</p>
+<p>Lastly we need to tell S3 what files to serve by default. Within <code class="highlighter-rouge">WebsiteConfiguration</code> we’re telling S3 to serve index.html as out index document as well as our error document.</p>
 
-<p>lets test this out!</p>
+<p><strong>Lets test this out!</strong></p>
 
-<p>to dploy the project so far use the following command:</p>
+<p>To deploy what we’ve created so far use the following command:</p>
 
 <p><code class="highlighter-rouge">serverless deploy -v</code></p>
 
-<p>the -v is going to give you more verbose output so you can see more of whats happening.</p>
+<p>The <code class="highlighter-rouge">-v</code> flag is going to give you more verbose output so you can see more of whats happening. You do not <em>have to</em> use it if you don’t want to.</p>
 
-<p>assuming everything worked out you should see something like this:</p>
+<p>Assuming everything your are, and worked as expected, you should see something like this:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>D:\serverlessapp-tut\frontend&gt;serverless deploy -v
-Serverless: WARNING: Missing "tenant" and "app" properties in serverless.yml. Without these properties, you can not publish the service to the Serverless Platform.
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Serverless: WARNING: Missing <span class="s2">"tenant"</span> and <span class="s2">"app"</span> properties <span class="k">in </span>serverless.yml. Without these properties, you can not publish the service to the Serverless Platform.
 Serverless: Packaging service...
 Serverless: Creating Stack...
 Serverless: Checking Stack create progress...
@@ -136,26 +134,32 @@ Stack Outputs
 ServerlessDeploymentBucketName: serverlessapp-frontend-a-serverlessdeploymentbuck-9kfom02mrohh
 </code></pre></div></div>
 
-<p>If you got no errors we can go back to aws to check out the bucket we created.</p>
+<p>If you got no errors we can go back into the AWS console to check out the bucket we created.</p>
 
-<p>navigate to Services -&gt; S3 from your aws console.</p>
+<p>Navigate to <code class="highlighter-rouge">Services</code> then <code class="highlighter-rouge">S3</code> in the same way you opened up <code class="highlighter-rouge">IAM</code> in the setup section.</p>
 
-<p>you will see two new buckets.</p>
+<p>You should see two new buckets.</p>
 
-<p>one of them will be named to match whatever string the server returned at the end of the deploy output <code class="highlighter-rouge">ServerlessDeploymentBucketName</code>  in my case <code class="highlighter-rouge">serverlessapp-frontend-a-serverlessdeploymentbuck-9kfom02mrohh</code>  this is where it puts the cloudformation code that is built by serverless framework. In other applications it may have python code to run on lambda, etc. if you tunnel in a bit you will see where it uses the value you set for <code class="highlighter-rouge">appName</code> in your config as well. (e.g. serverlessapp-frontend-app-rev001 for my example)</p>
+<p>One of them will be named as the string returned at the end of the deploy output <code class="highlighter-rouge">ServerlessDeploymentBucketName</code>  … in my case <code class="highlighter-rouge">serverlessapp-frontend-a-serverlessdeploymentbuck-9kfom02mrohh</code>. The end of this string is generated by AWS.</p>
 
-<p>you should also see the s3 bucket you defined… mine is called <code class="highlighter-rouge">serverlessapp-frontend-www-rev001</code> as expected. it is empty and rather boring… just a basic s3 bucket for now.</p>
+<p>This is where it puts the Cloudformation code that is generated by serverless framework. In other applications it may also house python code to run on lambda, etc. If you drill down a bit you will see where it uses the value you set for <code class="highlighter-rouge">appName</code> in your config as well. (e.g. <code class="highlighter-rouge">serverlessapp-frontend-app-rev001</code> for my example)</p>
 
-<p>once we’ve verified it works, we want to remove both buckets.  this is another simple serveless copmmand:</p>
+<p>You should also see the S3 bucket you defined… mine is called <code class="highlighter-rouge">serverlessapp-frontend-www-rev001</code> as expected.</p>
+
+<p>My bucket is empty and rather boring… just a basic S3 bucket for now. The cool part is that it is <em>there</em>.</p>
+
+<p>Once we’ve verified everything is working, we want to remove both buckets. This is another simple serverless command:</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sls remove
 </code></pre></div></div>
 
-<p>once done, you can verify it worked by refreshing your s3 console.</p>
+<p>Once its done, you can verify it removed everything by refreshing your S3 console.</p>
 
-<p>now back to the yml…</p>
+<p>In the next section we’ll attach a bucket policy to restrict file access for others to read only.</p>
 
-  </div><a class="u-url" href="/serverless/frontend/2018/10/11/Frontend-3.html" hidden></a>
+<p align="center"><a href="/serverless/frontend/2018/10/11/04-something-something-security.html">Continue to Part 4</a></p>
+
+  </div><a class="u-url" href="/serverless/frontend/2018/10/11/03-its-this-your-bucket.html" hidden></a>
 </article>
 
       </div>
