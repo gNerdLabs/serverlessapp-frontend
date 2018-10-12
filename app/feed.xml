@@ -1,0 +1,782 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.4">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2018-10-12T12:05:46-04:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">ServerlessApp.net</title><subtitle>Created 10/12/18 by &lt;b&gt;John Z Black&lt;/b&gt; during our bi-annual &quot;hackathon&quot; at &lt;a target=&quot;_blank&quot; href=&quot;https://praxent.com&quot;&gt;Praxent&lt;/a&gt;</subtitle><entry><title type="html">Frontend 00 - WTF is this?</title><link href="http://localhost:4000/serverless/frontend/2018/10/11/00-wtf-is-serverless.html" rel="alternate" type="text/html" title="Frontend 00 - WTF is this?" /><published>2018-10-11T14:49:16-04:00</published><updated>2018-10-11T14:49:16-04:00</updated><id>http://localhost:4000/serverless/frontend/2018/10/11/00-wtf-is-serverless</id><content type="html" xml:base="http://localhost:4000/serverless/frontend/2018/10/11/00-wtf-is-serverless.html">&lt;p&gt;&lt;strong&gt;First of all, What is “serverless” anyway?&lt;/strong&gt;
+&lt;img style=&quot;float: right; padding:10px 0 10px 10px&quot; src=&quot;/images/nerd-shit.jpg&quot; /&gt;
+Serverless is a way to build and run virtually any application by using just the required services instead of a traditional server. Provisioning and scaling resources is either automatic or as easy to do as updating a configuration. There is no software to install or maintain, no updates or patches to be applied. Because the systems are all high availability and fault tolerant by default, there is no need to architect for those capabilities. So what you get is Highly available, massively scalable fault tolerant applications with virtually no maintenance or administration needs for the infrastructure.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Ok… so what does that actually mean in practice?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;We’ll start simple. What we’ll build here is a small static site. No database integration or anything like that. Just a simple site served over SSL. We want it fast and available as well as secure and easy to update.&lt;/p&gt;
+
+&lt;p&gt;Instead of the standard approach of installing, updating and configuring a new server with all the bells and whistles. We are just going to select a service to provide each of the components of our application.&lt;/p&gt;
+
+&lt;p&gt;In this case:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;S3 for storage&lt;/li&gt;
+  &lt;li&gt;Cloudfront for distribution&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Additionally we will use Route53 for DNS and we’ll have Amazon generate our SSL certificate for us. We’ll secure and limit access using AWS policies.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;What we’ll cover&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;This is not intended to be an in-depth guide to every aspect of the tech were using. While it is somewhat detailed in areas I may just link to another resource for things I cannot cover here at this time. Chances are when it comes to something like Yaml, someone else has already covered it and they’ve probably done a better job than I would anyway.&lt;/p&gt;
+
+&lt;p&gt;Given time I will come back and add information to areas where I feel it is lacking or could be better. Please email me and let me know if anything stands out to you.&lt;/p&gt;
+
+&lt;p&gt;All that said, I intend to walk through the creation of all the various bits mentioned above. I will go over the basic of how each resource is configured as well as doing some code organization that keeps each file as clear as possible. This is &lt;em&gt;my&lt;/em&gt; preferred way of doing this… not necessarily why everyone would agree is &lt;em&gt;best practice&lt;/em&gt; but not likely something anyone should hate on. If you dont like, it, feel free to restructure however you see fit. You should be able to take whatever you want from these tutorials and leave/change the things you dont need.&lt;/p&gt;
+
+&lt;p&gt;In the next section we’ll briefly cover the installation and configuration of the tools and accounts you’ll be using.&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;a href=&quot;/serverless/frontend/2018/10/11/01-install-all-the-things.html&quot;&gt;Continue to Part 1&lt;/a&gt;&lt;/p&gt;</content><author><name></name></author><summary type="html">First of all, What is “serverless” anyway? Serverless is a way to build and run virtually any application by using just the required services instead of a traditional server. Provisioning and scaling resources is either automatic or as easy to do as updating a configuration. There is no software to install or maintain, no updates or patches to be applied. Because the systems are all high availability and fault tolerant by default, there is no need to architect for those capabilities. So what you get is Highly available, massively scalable fault tolerant applications with virtually no maintenance or administration needs for the infrastructure.</summary></entry><entry><title type="html">Frontend 01 - Install all the things! … and stuff</title><link href="http://localhost:4000/serverless/frontend/2018/10/11/01-install-all-the-things.html" rel="alternate" type="text/html" title="Frontend 01 - Install all the things! ... and stuff" /><published>2018-10-11T14:49:15-04:00</published><updated>2018-10-11T14:49:15-04:00</updated><id>http://localhost:4000/serverless/frontend/2018/10/11/01-install-all-the-things</id><content type="html" xml:base="http://localhost:4000/serverless/frontend/2018/10/11/01-install-all-the-things.html">&lt;p&gt;&lt;img style=&quot;float: right; padding:0 0 10px 10px&quot; src=&quot;/images/things.jpg&quot; /&gt;
+&lt;strong&gt;Installing requirements: Node and Serverless Framework&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Installation of Node, if you dont already have it, is really simple. They offer multiple options for most systems whether you want to use an installer or a package manager. This has been well covered all over the place as well as in the official Node documentation. I’d suggest going here and picking the method that works best for you.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://nodejs.org/en/download/package-manager/&quot; target=&quot;_blank&quot;&gt;Use a package manage&lt;/a&gt; or &lt;a href=&quot;https://nodejs.org/en/download/&quot; target=&quot;_blank&quot;&gt;download an installer&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Once you have completed the nodejs install its is really simple to install the Serverless Framework.&lt;/p&gt;
+
+&lt;p&gt;Feel free to read all about it at &lt;a href=&quot;https://serverless.com&quot; target=&quot;_blank&quot;&gt;serverless.com&lt;/a&gt; or just run the following command:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;npm &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-g&lt;/span&gt; serverless
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I would recommend going back when you have time and reading through the docs. There is a massive amount of information that we dont even scratch the surface of in this tutorial.&lt;/p&gt;
+
+&lt;p&gt;If your install was successful you should be able to execute the serverless command and see output like this:&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img style=&quot;padding:10px&quot; src=&quot;/images/console/serverless-commands.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Create AWS admin user&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;First thing you need here is an AWS account. If you have one, were good to go. If you have not yet signed up you can do so here: &lt;a href=&quot;https://portal.aws.amazon.com/billing/signup&quot; target=&quot;_blank&quot;&gt;AWS signup&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Once you’re logged in we need to create new credentials that will allow your Serverless Framework install to access your AWS account to create and configure resources.&lt;/p&gt;
+
+&lt;p&gt;The standard method for doing this is creating a &lt;code class=&quot;highlighter-rouge&quot;&gt;serverless-admin&lt;/code&gt; user with programmatic access credentials only. This user has full admin control of your AWS account so it is important you keep the credentials safe. I may try in the future to do a tutorial on how to customize the access given to this user so it only has what it &lt;em&gt;needs&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;Step one: go to IAM … from the main AWS console services page you should see IAM under &lt;code class=&quot;highlighter-rouge&quot;&gt;Security, Identity &amp;amp; Compliance&lt;/code&gt; If you have used it recently it will be in the top section. If you cannot find it, simply type &lt;code class=&quot;highlighter-rouge&quot;&gt;IAM&lt;/code&gt; in the search box and click it when it comes up:&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img style=&quot;padding:10px&quot; src=&quot;/images/aws-iam/1.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;From here we need to click on users so we can create ours. Select it from the left navigation or the center section:&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img style=&quot;padding:10px&quot; src=&quot;/images/aws-iam/2.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Next, click the big blue &lt;code class=&quot;highlighter-rouge&quot;&gt;Add user&lt;/code&gt; button at the top of the screen:&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img style=&quot;padding:10px&quot; src=&quot;/images/aws-iam/3.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;For &lt;code class=&quot;highlighter-rouge&quot;&gt;User name&lt;/code&gt; we’ll follow the standard recommendation and use &lt;code class=&quot;highlighter-rouge&quot;&gt;serverless-admin&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;also make sure you check the box for &lt;code class=&quot;highlighter-rouge&quot;&gt;Programmatic access&lt;/code&gt; … then click the blue &lt;code class=&quot;highlighter-rouge&quot;&gt;Next: Permissions&lt;/code&gt; button at the bottom:&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;&lt;img style=&quot;padding:10px&quot; src=&quot;/images/aws-iam/4.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Click on the &lt;code class=&quot;highlighter-rouge&quot;&gt;Attach existing policies directly&lt;/code&gt; box and tick the checkbox for &lt;code class=&quot;highlighter-rouge&quot;&gt;AdministratorAccess&lt;/code&gt;. You can use the search feature if it is not at the top of the list for some reason … then click the blue &lt;code class=&quot;highlighter-rouge&quot;&gt;Next: Review&lt;/code&gt; button at the bottom:&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img style=&quot;padding:10px&quot; src=&quot;/images/aws-iam/5.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;You should see a summary of what we just did like this. Click the blue &lt;code class=&quot;highlighter-rouge&quot;&gt;Create User&lt;/code&gt; button at the bottom to continue:&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img style=&quot;padding:10px&quot; src=&quot;/images/aws-iam/6.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;You should see a success message with your new users credentials. You can save them locally using the &lt;code class=&quot;highlighter-rouge&quot;&gt;Download .csv&lt;/code&gt; button or you can copy paste them from the interface here. You will not be able to retrieve them from AWS after you leave this page so make sure you save them (and keep them safe) or you will have to regenerate new ones.&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;img style=&quot;padding:10px&quot; src=&quot;/images/aws-iam/7.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Now that you are armed with admin user credentials we can configure Serverless Framework to use them on your behalf.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Configure Serverless Framework&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;this part is &lt;em&gt;really&lt;/em&gt; simple.&lt;/p&gt;
+
+&lt;p&gt;run the following command in your console:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;serverless config credentials &lt;span class=&quot;nt&quot;&gt;--provider&lt;/span&gt; aws &lt;span class=&quot;nt&quot;&gt;--key&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;key&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--secret&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;secret&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--profile&lt;/span&gt; serverless-admin
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;You’ll need to swap out &lt;code class=&quot;highlighter-rouge&quot;&gt;{key}&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;{secret}&lt;/code&gt; with the &lt;code class=&quot;highlighter-rouge&quot;&gt;Access key ID&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;Secret access key&lt;/code&gt; you just got from AWS.&lt;/p&gt;
+
+&lt;p&gt;What this does is add a new file in your &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.aws/&lt;/code&gt; folder where it stores your credentials under a profile called &lt;code class=&quot;highlighter-rouge&quot;&gt;serverless-admin&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Create your serverless app&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Alright, we’re almost done with setup.&lt;/p&gt;
+
+&lt;p&gt;Create a project directory and &lt;code class=&quot;highlighter-rouge&quot;&gt;cd&lt;/code&gt; into it.&lt;/p&gt;
+
+&lt;p&gt;e.g.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;mkdir &lt;/span&gt;serverlessapp-tut
+&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;serverlessapp-tut
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;the command to create the boilerplate app is as follows:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;serverless create &lt;span class=&quot;nt&quot;&gt;--template&lt;/span&gt; aws-nodejs &lt;span class=&quot;nt&quot;&gt;--path&lt;/span&gt; frontend
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;you should get some output like&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;_______                             __
+|   _   .-----.----.--.--.-----.----|  .-----.-----.-----.
+|   |___|  &lt;span class=&quot;nt&quot;&gt;-__&lt;/span&gt;|   _|  |  |  &lt;span class=&quot;nt&quot;&gt;-__&lt;/span&gt;|   _|  |  &lt;span class=&quot;nt&quot;&gt;-__&lt;/span&gt;|__ &lt;span class=&quot;nt&quot;&gt;--&lt;/span&gt;|__ &lt;span class=&quot;nt&quot;&gt;--&lt;/span&gt;|
+|____   |_____|__|  &lt;span class=&quot;se&quot;&gt;\_&lt;/span&gt;__/|_____|__| |__|_____|_____|_____|
+|   |   |             The Serverless Application Framework
+|       |                           serverless.com, v1.32.0
+ &lt;span class=&quot;nt&quot;&gt;-------&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'
+
+Serverless: Successfully generated boilerplate for template: &quot;aws-nodejs&quot;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;cd&lt;/code&gt; into the new &lt;code class=&quot;highlighter-rouge&quot;&gt;frontend&lt;/code&gt; directory and you should see 3 files, a base &lt;code class=&quot;highlighter-rouge&quot;&gt;.gitignore&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;handler.js&lt;/code&gt; and the main &lt;code class=&quot;highlighter-rouge&quot;&gt;serverless.ym&lt;/code&gt; file.&lt;/p&gt;
+
+&lt;p&gt;Go ahead and delete the &lt;code class=&quot;highlighter-rouge&quot;&gt;handler.js&lt;/code&gt; file as we wont be using it in this tutorial.&lt;/p&gt;
+
+&lt;p&gt;I’d suggest opening the whole directory in your favorite editor at this point.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;code &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;or atom, sublime… whatever floats your boat.&lt;/p&gt;
+
+&lt;p&gt;Now… the &lt;code class=&quot;highlighter-rouge&quot;&gt;serverless.yml&lt;/code&gt; is where all the magic happens. Open it up now.&lt;/p&gt;
+
+&lt;p&gt;If you’re not familiar with yaml it may be a good idea to read up on it or look at some yaml specific tutorials. You don’t absolutely &lt;em&gt;need&lt;/em&gt; to understand its structure or syntax to continue with this tutorial but I would highly recommend it so you can have the best understanding possible. Maybe start here: &lt;a href=&quot;http://keleshev.com/yaml-quick-introduction&quot; target=&quot;_blank&quot;&gt;YAML: Quick Introduction&lt;/a&gt; and come back when you feel you have a good enough understanding of the basics.&lt;/p&gt;
+
+&lt;p&gt;Alright… now in our &lt;code class=&quot;highlighter-rouge&quot;&gt;serverless.yml&lt;/code&gt; file we’re going to add everything we use. Go ahead and delete all the commented code.&lt;/p&gt;
+
+&lt;p&gt;Your file should now look something like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-yml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;na&quot;&gt;service&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;frontend&lt;/span&gt; 
+
+&lt;span class=&quot;na&quot;&gt;provider&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;aws&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;runtime&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;nodejs8.10&lt;/span&gt;
+
+&lt;span class=&quot;na&quot;&gt;functions&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;hello&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;handler.hello&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;We don’t need the functions section so get rid of it too.&lt;/p&gt;
+
+&lt;p&gt;Change the &lt;code class=&quot;highlighter-rouge&quot;&gt;service&lt;/code&gt; value to something appropriate, I’m using &lt;code class=&quot;highlighter-rouge&quot;&gt;serverlessapp-frontend&lt;/code&gt; (I also moved it below provider out of personal preference)&lt;/p&gt;
+
+&lt;p&gt;Now your file should look something like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-yml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;na&quot;&gt;provider&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;aws&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;runtime&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;nodejs8.10&lt;/span&gt;
+
+&lt;span class=&quot;na&quot;&gt;service&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;serverlessapp-frontend&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We’re ready to move on and start actually building our app.&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;&lt;a href=&quot;/serverless/frontend/2018/10/11/02-a-place-for-everything.html&quot;&gt;Continue to Part 2&lt;/a&gt;&lt;/p&gt;</content><author><name></name></author><summary type="html">Installing requirements: Node and Serverless Framework</summary></entry><entry><title type="html">Part 2 - A place for everything and everything in its place</title><link href="http://localhost:4000/serverless/frontend/2018/10/11/02-a-place-for-everything.html" rel="alternate" type="text/html" title="Part 2 - A place for everything and everything in its place" /><published>2018-10-11T14:49:14-04:00</published><updated>2018-10-11T14:49:14-04:00</updated><id>http://localhost:4000/serverless/frontend/2018/10/11/02-a-place-for-everything</id><content type="html" xml:base="http://localhost:4000/serverless/frontend/2018/10/11/02-a-place-for-everything.html">&lt;p&gt;before we go too much further, it may be a good idea to set up a config file… to make changes easier&lt;/p&gt;
+
+&lt;p&gt;create a new file in your frontend directory named `config.dev.yml’  we’re going to add a bunch of custom configuration values in here.&lt;/p&gt;
+
+&lt;p&gt;we’re setting up this config for the “dev” environment so lets start using a stage value. Add this to the provider block:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;stage: ${opt:stage, 'dev'}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;if a stage is provided in the command line it will use that, it will default to dev when not provided.&lt;/p&gt;
+
+&lt;p&gt;now we need to tell serverless to load our file.&lt;/p&gt;
+
+&lt;p&gt;add the following to your main yml file:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;custom: ${file(config.${self:provider.stage}.yml)}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I make this the first line of mine so it now looks something like this:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;---
+custom: ${file(config.${self:provider.stage}.yml)}
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: ${opt:stage, 'dev'}
+
+service: serverlessapp-frontend
+
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;you can now see how the file import works. ${self:provider.stage} is set to &lt;code class=&quot;highlighter-rouge&quot;&gt;dev&lt;/code&gt; by default so it loads config.dev.yml in as the value for the &lt;code class=&quot;highlighter-rouge&quot;&gt;custom&lt;/code&gt; block.&lt;/p&gt;
+
+&lt;p&gt;(note: Scope for &lt;code class=&quot;highlighter-rouge&quot;&gt;self&lt;/code&gt; gats a little odd the way I have this set up. its easiest to think of &lt;code class=&quot;highlighter-rouge&quot;&gt;self&lt;/code&gt; as being at the main serverless.yml file root.)&lt;/p&gt;
+
+&lt;p&gt;so, lets set up our config now&lt;/p&gt;
+
+&lt;p&gt;add the following to your config.dev.yml:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;---
+rev: 001
+domainName: serverlessapp.net
+cleanName: serverlessapp-frontend
+appName: ${self:custom.cleanName}-app-rev${self:custom.rev}
+runtime: nodejs8.10
+profile: serverless-admin
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;rev&lt;/code&gt; will be a somewhat arbitrary value we can use to tell what revision we are working on. Sometimes if a build or a remove fails it can leave remnantes that block us from reusing the exact app name again (at least until the system clears them out… which can take a while)  this is a habndy way to change the name of our next deploy so we dont have to wait.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;domainName&lt;/code&gt; should be pretty self explanatory&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;cleanName&lt;/code&gt; is the base name for our app that all other names will be based off of, in this example we will use the vaule we previously had for &lt;code class=&quot;highlighter-rouge&quot;&gt;service&lt;/code&gt; in the main yml file: serverlessapp-frontend&lt;/p&gt;
+
+&lt;p&gt;More on the note about scope from above…&lt;/p&gt;
+
+&lt;p&gt;since we are accessing these config values from within the main file as &lt;code class=&quot;highlighter-rouge&quot;&gt;custom&lt;/code&gt;, we do &lt;code class=&quot;highlighter-rouge&quot;&gt;self:custom&lt;/code&gt; and then whichever value we want. This is instead of what might seem more intuitive to some… ${self:cleanName} or somethin glike that.&lt;/p&gt;
+
+&lt;p&gt;so to reference our custon values we use the following: ${self:custom.cleanName} even when &lt;code class=&quot;highlighter-rouge&quot;&gt;custom&lt;/code&gt; does not exist in the immediate file.&lt;/p&gt;
+
+&lt;p&gt;this allows us to create the following:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;appName&lt;/code&gt; comes out (in this example) as &lt;code class=&quot;highlighter-rouge&quot;&gt;serverlessapp-frontend-app-rev001&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;how this is used will be more evident later on in the tutorials&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;runtime&lt;/code&gt; should be set to whatever you previously had in your main file. For this particular frontend application, we wont even be using this so it just needs to be set to something valid.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;profile&lt;/code&gt; while not strictly necessary is a way to specify which credentials you use for authenticating with aws… if you have multiple sets of credentials for different projects this comes in quite handy&lt;/p&gt;
+
+&lt;p&gt;Now that we have out config set up we can swap out the parts of our main yml that we have set up.&lt;/p&gt;
+
+&lt;p&gt;update your serverless.yml so it looks like this:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;---
+custom: ${file(config.${self:provider.stage}.yml)}
+
+provider:
+  name: aws
+  runtime: ${self:custom.runtime}
+  stage: ${opt:stage, 'dev'}
+  profile: ${self:custom.profile}
+
+service: ${self:custom.appName}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;the only addition is the &lt;code class=&quot;highlighter-rouge&quot;&gt;profile&lt;/code&gt; entry.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;“Before, however, Lucy had been an hour in the house she had contrived a place for everything and put everything in its place.”&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The Naughty Girl Won : Religious Tract Society in 1799&lt;/li&gt;
+&lt;/ul&gt;</content><author><name></name></author><summary type="html">before we go too much further, it may be a good idea to set up a config file… to make changes easier</summary></entry><entry><title type="html">Part 3 - is this your bucket?</title><link href="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-3.html" rel="alternate" type="text/html" title="Part 3 - is this your bucket?" /><published>2018-10-11T14:49:13-04:00</published><updated>2018-10-11T14:49:13-04:00</updated><id>http://localhost:4000/serverless/frontend/2018/10/11/Frontend-3</id><content type="html" xml:base="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-3.html">&lt;p&gt;Now we can move on to actually creating the s3 bucket.&lt;/p&gt;
+
+&lt;p&gt;the s3 bucket is where we’ll store all of our frontend html and whatnot.&lt;/p&gt;
+
+&lt;p&gt;lets add that now.&lt;/p&gt;
+
+&lt;p&gt;start with naming the bucket…&lt;/p&gt;
+
+&lt;p&gt;add a new value to your config file:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;s3Bucket: ${self:custom.cleanName}-www-rev${self:custom.rev}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;much like &lt;code class=&quot;highlighter-rouge&quot;&gt;appName&lt;/code&gt;, the value of &lt;code class=&quot;highlighter-rouge&quot;&gt;s3Bucket&lt;/code&gt; is computed as &lt;code class=&quot;highlighter-rouge&quot;&gt;serverlessapp-frontend-www-rev001&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;we can now ause that value in out serverless.yml file.  add the following block there:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;resources:
+Resources:
+    AppS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+        BucketName: ${self:custom.appName}
+        AccessControl: PublicRead
+        WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;this is our resources block, it’s where we will put all the definition for the components of our app&lt;/p&gt;
+
+&lt;p&gt;we have defined a resource clled &lt;code class=&quot;highlighter-rouge&quot;&gt;AppS3Bucket&lt;/code&gt;  the type is standard AWS naming for their S3 service: &lt;code class=&quot;highlighter-rouge&quot;&gt;AWS::S3::Bucket&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;We’ve defined three properties for this resource, BucketName, AccessControl and WebsiteConfiguration.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;BucketName&lt;/code&gt; wil be out custom name: &lt;code class=&quot;highlighter-rouge&quot;&gt;serverlessapp-frontend-www-rev001&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;We are allowing public read since we want this to serve our www assets directly to users. As static www root.&lt;/p&gt;
+
+&lt;p&gt;lastly we need to tell S3 what files to serve by default.&lt;/p&gt;
+
+&lt;p&gt;lets test this out!&lt;/p&gt;
+
+&lt;p&gt;to dploy the project so far use the following command:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;serverless deploy -v&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;the -v is going to give you more verbose output so you can see more of whats happening.&lt;/p&gt;
+
+&lt;p&gt;assuming everything worked out you should see something like this:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;D:\serverlessapp-tut\frontend&amp;gt;serverless deploy -v
+Serverless: WARNING: Missing &quot;tenant&quot; and &quot;app&quot; properties in serverless.yml. Without these properties, you can not publish the service to the Serverless Platform.
+Serverless: Packaging service...
+Serverless: Creating Stack...
+Serverless: Checking Stack create progress...
+CloudFormation - CREATE_IN_PROGRESS - AWS::CloudFormation::Stack - serverlessapp-frontend-app-rev1-dev
+CloudFormation - CREATE_IN_PROGRESS - AWS::S3::Bucket - ServerlessDeploymentBucket
+CloudFormation - CREATE_IN_PROGRESS - AWS::S3::Bucket - ServerlessDeploymentBucket
+CloudFormation - CREATE_COMPLETE - AWS::S3::Bucket - ServerlessDeploymentBucket
+CloudFormation - CREATE_COMPLETE - AWS::CloudFormation::Stack - serverlessapp-frontend-app-rev1-dev
+Serverless: Stack create finished...
+Serverless: Uploading CloudFormation file to S3...
+Serverless: Uploading artifacts...
+Serverless: Validating template...
+Serverless: Updating Stack...
+Serverless: Checking Stack update progress...
+CloudFormation - CREATE_COMPLETE - AWS::CloudFormation::Stack - serverlessapp-frontend-app-rev1-dev
+CloudFormation - UPDATE_IN_PROGRESS - AWS::CloudFormation::Stack - serverlessapp-frontend-app-rev1-dev
+CloudFormation - CREATE_IN_PROGRESS - AWS::S3::Bucket - AppS3Bucket
+CloudFormation - CREATE_IN_PROGRESS - AWS::S3::Bucket - AppS3Bucket
+CloudFormation - CREATE_COMPLETE - AWS::S3::Bucket - AppS3Bucket
+CloudFormation - UPDATE_COMPLETE_CLEANUP_IN_PROGRESS - AWS::CloudFormation::Stack - serverlessapp-frontend-app-rev1-dev
+CloudFormation - UPDATE_COMPLETE - AWS::CloudFormation::Stack - serverlessapp-frontend-app-rev1-dev
+Serverless: Stack update finished...
+Service Information
+service: serverlessapp-frontend-app-rev1
+stage: dev
+region: us-east-1
+stack: serverlessapp-frontend-app-rev1-dev
+api keys:
+None
+endpoints:
+None
+functions:
+None
+
+Stack Outputs
+ServerlessDeploymentBucketName: serverlessapp-frontend-a-serverlessdeploymentbuck-9kfom02mrohh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;If you got no errors we can go back to aws to check out the bucket we created.&lt;/p&gt;
+
+&lt;p&gt;navigate to Services -&amp;gt; S3 from your aws console.&lt;/p&gt;
+
+&lt;p&gt;you will see two new buckets.&lt;/p&gt;
+
+&lt;p&gt;one of them will be named to match whatever string the server returned at the end of the deploy output &lt;code class=&quot;highlighter-rouge&quot;&gt;ServerlessDeploymentBucketName&lt;/code&gt;  in my case &lt;code class=&quot;highlighter-rouge&quot;&gt;serverlessapp-frontend-a-serverlessdeploymentbuck-9kfom02mrohh&lt;/code&gt;  this is where it puts the cloudformation code that is built by serverless framework. In other applications it may have python code to run on lambda, etc. if you tunnel in a bit you will see where it uses the value you set for &lt;code class=&quot;highlighter-rouge&quot;&gt;appName&lt;/code&gt; in your config as well. (e.g. serverlessapp-frontend-app-rev001 for my example)&lt;/p&gt;
+
+&lt;p&gt;you should also see the s3 bucket you defined… mine is called &lt;code class=&quot;highlighter-rouge&quot;&gt;serverlessapp-frontend-www-rev001&lt;/code&gt; as expected. it is empty and rather boring… just a basic s3 bucket for now.&lt;/p&gt;
+
+&lt;p&gt;once we’ve verified it works, we want to remove both buckets.  this is another simple serveless copmmand:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sls remove
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;once done, you can verify it worked by refreshing your s3 console.&lt;/p&gt;
+
+&lt;p&gt;now back to the yml…&lt;/p&gt;</content><author><name></name></author><summary type="html">Now we can move on to actually creating the s3 bucket.</summary></entry><entry><title type="html">Part 4 - something something policy</title><link href="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-4.html" rel="alternate" type="text/html" title="Part 4 - something something policy" /><published>2018-10-11T14:49:12-04:00</published><updated>2018-10-11T14:49:12-04:00</updated><id>http://localhost:4000/serverless/frontend/2018/10/11/Frontend-4</id><content type="html" xml:base="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-4.html">&lt;p&gt;to make the s3 bucket work as we want, we need to set up a bucket policy:&lt;/p&gt;
+
+&lt;p&gt;in your resources section, we’re gonna add a new itrem called &lt;code class=&quot;highlighter-rouge&quot;&gt;AppS3BucketPolicy&lt;/code&gt;:&lt;/p&gt;
+
+&lt;p&gt;this is the new item we’re adding:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;AppS3BucketPolicy:
+Type: AWS::S3::BucketPolicy
+Properties:
+    Bucket:
+    Ref: AppS3Bucket
+    PolicyDocument:
+    Statement:
+    - Sid: PublicReadGetObject
+        Effect: Allow
+        Principal: '*'
+        Action:
+        - s3:GetObject
+        Resource:
+        Fn::Join: [
+            &quot;&quot;, [
+            &quot;arn:aws:s3:::&quot;,
+            {
+                &quot;Ref&quot;: &quot;AppS3Bucket&quot;
+            },
+            &quot;/*&quot;
+            ]
+        ]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;your resources block should now look like this:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;resources:
+Resources:
+    AppS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+        BucketName: ${self:custom.s3Bucket}
+        AccessControl: PublicRead
+        WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+    AppS3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+        Bucket:
+        Ref: AppS3Bucket
+        PolicyDocument:
+        Statement:
+            - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action:
+                - s3:GetObject
+            Resource:
+                Fn::Join: [
+                &quot;&quot;, [
+                    &quot;arn:aws:s3:::&quot;,
+                    {
+                    &quot;Ref&quot;: &quot;AppS3Bucket&quot;
+                    },
+                    &quot;/*&quot;
+                ]
+                ]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Just like the S3 bucket we have a new item with a Type and some properties.&lt;/p&gt;
+
+&lt;p&gt;Without going into the &lt;code class=&quot;highlighter-rouge&quot;&gt;PolicyDocument&lt;/code&gt; because aws policies are pretty far off track for this tutorial, I will say that if you dont understand what is going on in that section you shoul dprobably do some reading on policies. Long story short, we are defining a policy here that allows anyone to read any content from the bucket this policy is attached to.&lt;/p&gt;
+
+&lt;p&gt;That is the real important takeaway from this item… you can see that the &lt;code class=&quot;highlighter-rouge&quot;&gt;Bucket&lt;/code&gt; property of the new policy if a &lt;code class=&quot;highlighter-rouge&quot;&gt;Ref&lt;/code&gt; … we simplu use the name of the resource we are referencing and it will figure out all the details behind the scenes. In this case we called our bucket &lt;code class=&quot;highlighter-rouge&quot;&gt;AppS3Bucket&lt;/code&gt; so our &lt;code class=&quot;highlighter-rouge&quot;&gt;AppS3BucketPolicy&lt;/code&gt; is attached to it.&lt;/p&gt;</content><author><name></name></author><summary type="html">to make the s3 bucket work as we want, we need to set up a bucket policy:</summary></entry><entry><title type="html">Part 5 - housekeeping &amp;amp; structure (only slightly anal)</title><link href="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-5.html" rel="alternate" type="text/html" title="Part 5 - housekeeping &amp; structure (only slightly anal)" /><published>2018-10-11T14:49:11-04:00</published><updated>2018-10-11T14:49:11-04:00</updated><id>http://localhost:4000/serverless/frontend/2018/10/11/Frontend-5</id><content type="html" xml:base="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-5.html">&lt;p&gt;At this point we should do a littl emore oganization. This app is pretty small but will still benefit from a better code structure. Lets set up all out resources as includes, like we did our configuration…&lt;/p&gt;
+
+&lt;p&gt;create a new folder called &lt;code class=&quot;highlighter-rouge&quot;&gt;resources&lt;/code&gt;
+within that folder create a file named &lt;code class=&quot;highlighter-rouge&quot;&gt;app_bucket.yml&lt;/code&gt; or something clear like that.&lt;/p&gt;
+
+&lt;p&gt;we’re going to copy and paste our definition of &lt;code class=&quot;highlighter-rouge&quot;&gt;AppS3Bucket&lt;/code&gt; into that file:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;---
+Type: AWS::S3::Bucket
+Properties:
+  BucketName: ${self:custom.s3Bucket}
+  AccessControl: PublicRead
+  WebsiteConfiguration:
+    IndexDocument: index.html
+    ErrorDocument: index.html
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;and do the same for &lt;code class=&quot;highlighter-rouge&quot;&gt;AppS3BucketPolicy&lt;/code&gt; in a file called &lt;code class=&quot;highlighter-rouge&quot;&gt;app_bucket_policy.yml&lt;/code&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;---
+Type: AWS::S3::BucketPolicy
+Properties:
+  Bucket:
+    Ref: AppS3Bucket
+  PolicyDocument:
+    Statement:
+      - Sid: PublicReadGetObject
+        Effect: Allow
+        Principal: '*'
+        Action:
+          - s3:GetObject
+        Resource:
+          Fn::Join: [
+            &quot;&quot;, [
+              &quot;arn:aws:s3:::&quot;,
+              {
+                &quot;Ref&quot;: &quot;AppS3Bucket&quot;
+              },
+              &quot;/*&quot;
+            ]
+          ]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;remember to be careful and clean up your indentation as needed. yml is dependent on indentation.&lt;/p&gt;
+
+&lt;p&gt;now we can update the resources section of our main file to look like this:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;resources:
+  Resources:
+    AppS3Bucket: ${file(resources/app_bucket.yml)}
+    AppS3BucketPolicy: ${file(resources/app_bucket_policy.yml)}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;which has eliminated ~25 lines of noisy code from our main document.&lt;/p&gt;
+
+&lt;p&gt;There is one last thing we need to change before we can dest the deploy again.&lt;/p&gt;
+
+&lt;p&gt;our &lt;code class=&quot;highlighter-rouge&quot;&gt;BucketName&lt;/code&gt; value in the properties for &lt;code class=&quot;highlighter-rouge&quot;&gt;AppS3Bucket&lt;/code&gt; could be more direct. Rather than using a relative reference that in my opinion is counterintuitive, lets get that value directly from the source.  change the value of &lt;code class=&quot;highlighter-rouge&quot;&gt;BucketName&lt;/code&gt; in ‘app_bucket.yml’ like so:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;BucketName: ${file(config.${self:provider.stage}.yml):s3Bucket}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now, Im not sure this is strictly necessary. It would probably work fine without doing this… I havent tested it with the relative variable reference so I dont know. My personal preference is to do it this way but its also an opportunity to point out one more method of referencing data from other files.&lt;/p&gt;
+
+&lt;p&gt;we are targeting the file the same way we do when including the whole  thing for each of our resources… in this case though we are telling it the name of a single variable, &lt;code class=&quot;highlighter-rouge&quot;&gt;s3Bucket&lt;/code&gt;, we want to retrieve.&lt;/p&gt;
+
+&lt;p&gt;Its also a chance to point out that the file path is relative to the file path is relative to the main serverlass.yml file… not to the file the code is actually in. i.e. we access it via &lt;code class=&quot;highlighter-rouge&quot;&gt;config.dev.yml&lt;/code&gt; as opposed to something like &lt;code class=&quot;highlighter-rouge&quot;&gt;../config.dev.yml&lt;/code&gt; because we are inside the &lt;code class=&quot;highlighter-rouge&quot;&gt;resources&lt;/code&gt; directory.&lt;/p&gt;
+
+&lt;p&gt;go ahead and deploy again, verify it still works and then remove it.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;sls daploy -v&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;sls remove&lt;/code&gt;&lt;/p&gt;</content><author><name></name></author><summary type="html">At this point we should do a littl emore oganization. This app is pretty small but will still benefit from a better code structure. Lets set up all out resources as includes, like we did our configuration…</summary></entry><entry><title type="html">Part 6 - wait… did you say FREE SSL?!?</title><link href="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-6.html" rel="alternate" type="text/html" title="Part 6 - wait... did you say FREE SSL?!?" /><published>2018-10-11T14:49:10-04:00</published><updated>2018-10-11T14:49:10-04:00</updated><id>http://localhost:4000/serverless/frontend/2018/10/11/Frontend-6</id><content type="html" xml:base="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-6.html">&lt;p&gt;one of the nice things about using aws is that we can use free ssl for public sites. lets set up a new ssl certificate as part of our project here.&lt;/p&gt;
+
+&lt;p&gt;first we need to make sure we  have a hosted zone on route53. this is still poaaible if your dns is hosted elsewhere but for this tutorial Im keeping it all in house.&lt;/p&gt;
+
+&lt;p&gt;— section on dns zone —&lt;/p&gt;
+
+&lt;p&gt;once your zone is all set up, create a new file in your resources directory: `ssl_certificate.yml’ and place the following yml in it:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;---
+Type: AWS::CertificateManager::Certificate
+Properties:
+  DomainName: ${file(config.${self:provider.stage}.yml):domainName}
+  SubjectAlternativeNames:
+    - www.serverlessapp.net
+  ValidationMethod: DNS
+  DomainValidationOptions:
+  - DomainName: ${file(config.${self:provider.stage}.yml):domainName}
+    ValidationDomain: ${file(config.${self:provider.stage}.yml):hostedZoneName}
+  - DomainName: www.serverlessapp.net
+    ValidationDomain: ${file(config.${self:provider.stage}.yml):hostedZoneName}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;By now you are familiar with the Type and Properties concept. You can see we’re using the domain name we set earlier in our config file. I have opted to include a www subdomain as an alternate here (&lt;code class=&quot;highlighter-rouge&quot;&gt;SubjectAlternativeNames&lt;/code&gt;) as well, so that is hardcoded.  In a future verison of this I may set it up to be more dynamic. Since Im not doing that today, I will probably be hardcoding my default stage to prod from here on out.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;ValidationMethod&lt;/code&gt; is set to &lt;code class=&quot;highlighter-rouge&quot;&gt;DNS&lt;/code&gt;… this will allow for really easy verification of the domain so the ssl certificate can be issued. Another option is &lt;code class=&quot;highlighter-rouge&quot;&gt;Email&lt;/code&gt; … as I mentioned above, you can do the certificate another way if you dont have a hosted zon for your domain in route53&lt;/p&gt;
+
+&lt;p&gt;you will also see we are referencing a new config variable: &lt;code class=&quot;highlighter-rouge&quot;&gt;hostedZoneName&lt;/code&gt;  this should be added to your config file like so:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;hostedZoneName:serverlessapp.net
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;as shown above when creating the zone, we end up with the domain name value as the zone name.&lt;/p&gt;
+
+&lt;p&gt;each domain name in the certificate will need to be verified independently so will need its own entry in the &lt;code class=&quot;highlighter-rouge&quot;&gt;DomainValidationOptions&lt;/code&gt; array.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;DomainName&lt;/code&gt; is the actual domain name that is added to the ssl certificate and secured, &lt;code class=&quot;highlighter-rouge&quot;&gt;ValidationDomain&lt;/code&gt; will, in cases like this, be the same value for all of them.&lt;/p&gt;
+
+&lt;p&gt;It’s not difficult to manually create the certificate. If you do that, I believe you can use a wildcard if you choose to do so. I dont believe serverless framework currently supports that option out of the box. I’ll note the changes later on if you are using a manually created certificate. IF so, just ignore this whole section.&lt;/p&gt;
+
+&lt;p&gt;now that we have the definition, we need to add the cert to our resources in serverless.yml:&lt;/p&gt;
+
+&lt;p&gt;StaticSiteCert: ${file(resources/ssl_certificate.yml)}&lt;/p&gt;
+
+&lt;p&gt;Lets deploy again. I’ll need to make a video of this process probably…&lt;/p&gt;
+
+&lt;p&gt;– do deploy stuff here —&lt;/p&gt;</content><author><name></name></author><summary type="html">one of the nice things about using aws is that we can use free ssl for public sites. lets set up a new ssl certificate as part of our project here.</summary></entry><entry><title type="html">Part 7 - now it places the markup in the basket…</title><link href="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-7.html" rel="alternate" type="text/html" title="Part 7 - now it places the markup in the basket..." /><published>2018-10-11T14:49:09-04:00</published><updated>2018-10-11T14:49:09-04:00</updated><id>http://localhost:4000/serverless/frontend/2018/10/11/Frontend-7</id><content type="html" xml:base="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-7.html">&lt;p&gt;note about how we’re not gonna remove stuff anymore unless something goes wrong.&lt;/p&gt;
+
+&lt;p&gt;lets get some html in the bucket so we can look at it…&lt;/p&gt;
+
+&lt;p&gt;create a new folder called &lt;code class=&quot;highlighter-rouge&quot;&gt;app&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;create in the folder an &lt;code class=&quot;highlighter-rouge&quot;&gt;index.html&lt;/code&gt; file&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;!DOCTYPE html&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;html&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;lang=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;en&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;meta&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;charset=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;utf-8&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;title&amp;gt;&lt;/span&gt;ServerlessApp.net tutorial -- html boilerplate&lt;span class=&quot;nt&quot;&gt;&amp;lt;/title&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;link&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;rel=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;stylesheet&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;href=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;css/style.css&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;&amp;lt;!--[if IE]&amp;gt;
+        &amp;lt;script src=&quot;http://html5shiv.googlecode.com/svn/trunk/html5.js&quot;&amp;gt;&amp;lt;/script&amp;gt;
+    &amp;lt;![endif]--&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
+
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;body&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;home&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;h1&amp;gt;&lt;/span&gt;This is just a placeholder!&lt;span class=&quot;nt&quot;&gt;&amp;lt;/h1&amp;gt;&lt;/span&gt;
+
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;we can sync our app dir with the s3 bucket really easily using a serverless framework plugin…&lt;/p&gt;
+
+&lt;p&gt;this will add some utility commands for us… one does the file sync, the other will come in handy later…&lt;/p&gt;
+
+&lt;p&gt;easy install:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;npm install git+https://github.com/gNerdLabs/serverless-single-page-app-plugin.git
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;and add it to serverless.yml:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;plugins:
+- serverless-single-page-app-plugin
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;run the command:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sls syncToS3
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;depending on your environment you may get an error here:&lt;/p&gt;
+
+&lt;p&gt;if you see “Serverless: fatal error: Unable to locate credentials”  try the following:&lt;/p&gt;
+
+&lt;p&gt;run the command &lt;code class=&quot;highlighter-rouge&quot;&gt;aws configure&lt;/code&gt; and enter the credentials from before.  They should be in &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.aws/credentials&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;just hit &lt;code class=&quot;highlighter-rouge&quot;&gt;enter&lt;/code&gt; to use default values for the rest of the prompts&lt;/p&gt;
+
+&lt;p&gt;this will make a new “default” profile for you and that is the one that the plugin will use.&lt;/p&gt;
+
+&lt;p&gt;The plugin works by simply executing commands for you in the aws CLI. Without the &lt;code class=&quot;highlighter-rouge&quot;&gt;default&lt;/code&gt; profile it cannot authenticate.&lt;/p&gt;
+
+&lt;p&gt;— maybe use default above to avoid this? —&lt;/p&gt;
+
+&lt;p&gt;once you have it working, the command&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sls syncToS3
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;should show something like:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;upload: app\index.html to s3://serverlessapp-frontend-www-rev1/index.htmlining
+
+Serverless: Successfully synced to the S3 bucket
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now go to your S3 bucket in the aws console.&lt;/p&gt;
+
+&lt;p&gt;click on the properties tab, click the “Static website hosting” box and you should see an &lt;code class=&quot;highlighter-rouge&quot;&gt;endpoint&lt;/code&gt; link… clicking it should show you the “This is just a placeholder!” text from our index.html file.&lt;/p&gt;</content><author><name></name></author><summary type="html">note about how we’re not gonna remove stuff anymore unless something goes wrong.</summary></entry><entry><title type="html">Part 8 - cloudfront</title><link href="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-8.html" rel="alternate" type="text/html" title="Part 8 - cloudfront" /><published>2018-10-11T14:49:08-04:00</published><updated>2018-10-11T14:49:08-04:00</updated><id>http://localhost:4000/serverless/frontend/2018/10/11/Frontend-8</id><content type="html" xml:base="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-8.html">&lt;p&gt;next we add dns and cloudfront&lt;/p&gt;
+
+&lt;p&gt;We’re going to be using cloudfront to serve the contents of our s3 bucket over ssl… so this is the part that really ties it all together…&lt;/p&gt;
+
+&lt;p&gt;first thing we need to do is add an array of domains to our config file. These are the aliases our cloudfront distribution will respond to.&lt;/p&gt;
+
+&lt;p&gt;in the config file, add:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cfAliases:
+  - serverlessapp.net
+  - www.serverlessapp.net
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;obviously using your own domain name.&lt;/p&gt;
+
+&lt;p&gt;now, create a new file in your respurces directory called &lt;code class=&quot;highlighter-rouge&quot;&gt;cf_distro.yml&lt;/code&gt; and insert the following code:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;---
+Type: AWS::CloudFront::Distribution
+Properties:
+  DistributionConfig:
+    Origins:
+      - DomainName:
+          Fn::Join: [
+            &quot;&quot;, [
+              { &quot;Ref&quot;: &quot;AppS3Bucket&quot; },
+              &quot;.s3.amazonaws.com&quot;
+            ]
+          ]
+        Id:
+          Ref: AppS3Bucket
+        CustomOriginConfig:
+          HTTPPort: 80
+          HTTPSPort: 443
+          OriginProtocolPolicy: https-only
+    Enabled: 'true'
+    Aliases: ${file(config.${self:provider.stage}.yml):cfAliases}
+    DefaultRootObject: index.html
+    CustomErrorResponses:
+      - ErrorCode: 404
+        ResponseCode: 200
+        ResponsePagePath: /index.html
+    DefaultCacheBehavior:
+      AllowedMethods:
+        - GET
+        - HEAD
+      TargetOriginId:
+        Ref: AppS3Bucket
+      ForwardedValues:
+        QueryString: 'false'
+        Cookies:
+          Forward: none
+      ViewerProtocolPolicy: redirect-to-https
+    ViewerCertificate:
+      # AcmCertificateArn: ${file(config.${self:provider.stage}.yml):sslCertArn} # use this if using an existing cert
+      AcmCertificateArn:
+        Ref: StaticSiteCert
+      SslSupportMethod: sni-only
+DependsOn:
+  - AppS3BucketPolicy
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;— if time allows, add a breakdown of whats going on here —&lt;/p&gt;
+
+&lt;p&gt;note: if using a manually created aws ssl cert as mentioned above, you’ll need to swap:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;AcmCertificateArn:
+  Ref: StaticSiteCert
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;for&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;AcmCertificateArn: ${file(config.${self:provider.stage}.yml):sslCertArn}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;then add &lt;code class=&quot;highlighter-rouge&quot;&gt;sslCertArn&lt;/code&gt; to your config file where the value is that of your certificates arn.&lt;/p&gt;
+
+&lt;p&gt;e.g.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sslCertArn: arn:aws:acm:region:000000000000:certificate/0000000e-0e00-000d-ad0c-a0c000000000
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;otherwise… the reference to our own resource should suffice.&lt;/p&gt;
+
+&lt;p&gt;note about cloudfront distibution changes in aws… they take forever to update so we want to do as few updates as possible here. mistakes suck because removing them and rebuilding is a really long wait between tests.&lt;/p&gt;
+
+&lt;p&gt;so, hopefully we have everything right in the first try ;)&lt;/p&gt;</content><author><name></name></author><summary type="html">next we add dns and cloudfront</summary></entry><entry><title type="html">Part 9 - DNS</title><link href="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-9.html" rel="alternate" type="text/html" title="Part 9 - DNS" /><published>2018-10-11T14:49:07-04:00</published><updated>2018-10-11T14:49:07-04:00</updated><id>http://localhost:4000/serverless/frontend/2018/10/11/Frontend-9</id><content type="html" xml:base="http://localhost:4000/serverless/frontend/2018/10/11/Frontend-9.html">&lt;p&gt;before we deploy again we should add out dns records to point or domain names to the cf distribution.&lt;/p&gt;
+
+&lt;p&gt;we’re gonna do one resource for each domain.&lt;/p&gt;
+
+&lt;p&gt;first, we also need to add one more config variable:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;hostedZoneId: Z2FDTNDATAQYW2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;that is the zoneID for cloudfront… this is a static value provided by amazon.&lt;/p&gt;
+
+&lt;p&gt;now, create the first file in the resources directory:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;dns_record.yml&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;should contain:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;---
+Type: &quot;AWS::Route53::RecordSet&quot;
+Properties:
+  AliasTarget:
+    DNSName:
+      Fn::GetAtt:
+        - CloudFrontDistribution
+        - DomainName
+    HostedZoneId: ${file(config.${self:provider.stage}.yml):hostedZoneId}
+  HostedZoneName: ${file(config.${self:provider.stage}.yml):hostedZoneName}.
+  Name: ${file(config.${self:provider.stage}.yml):hostedZoneName}.
+  Type: 'A'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;then the second file:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;dns_record2.yml&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;should contain:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;---
+Type: &quot;AWS::Route53::RecordSet&quot;
+Properties:
+  AliasTarget:
+    DNSName:
+      Fn::GetAtt:
+        - CloudFrontDistribution
+        - DomainName
+    HostedZoneId: ${file(config.${self:provider.stage}.yml):hostedZoneId}
+  HostedZoneName: ${file(config.${self:provider.stage}.yml):hostedZoneName}.
+  Name: www.serverlessapp.net.
+  Type: 'A'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;you’ll see that the &lt;code class=&quot;highlighter-rouge&quot;&gt;Name&lt;/code&gt; value is really the only difference here.&lt;/p&gt;
+
+&lt;p&gt;link it all up in the serverless.yml file by adding these three lines to the resources block:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;CloudFrontDistribution: ${file(resources/cf_distro.yml)}
+DnsRecord: ${file(resources/dns_record.yml)}
+DnsRecord2: ${file(resources/dns_record.2.yml)}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;deploy now…&lt;/p&gt;</content><author><name></name></author><summary type="html">before we deploy again we should add out dns records to point or domain names to the cf distribution.</summary></entry></feed>

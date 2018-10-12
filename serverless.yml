@@ -18,5 +18,12 @@ resources:
     DnsRecord: ${file(resources/dns_record.yml)}
     DnsRecord2: ${file(resources/dns_record.2.yml)}
 
+  Outputs:
+    CloudFrontDistributionOutput:
+      Value:
+        Fn::GetAtt:
+          - CloudFrontDistribution
+          - DomainName
+          
 plugins:
   - serverless-single-page-app-plugin
