@@ -1,0 +1,106 @@
+---
+layout: post
+title:  "Part 9 - DNS? - INCOMPLETE"
+date:   2018-10-11 14:49:07 -0400
+categories: Serverless Frontend
+---
+<img style="float: right; padding:10px 0 10px 10px" src="/images/dns.jpg">
+before we deploy again we should add out dns records to point or domain names to the cf distribution. 
+
+we're gonna do one resource for each domain.
+
+first, we also need to add one more config variable:
+
+```
+hostedZoneId: Z2FDTNDATAQYW2
+```
+
+that is the zoneID for cloudfront... this is a static value provided by amazon. 
+
+now, create the first file in the resources directory:
+
+`dns_record.yml`
+
+should contain:
+
+```
+---
+Type: "AWS::Route53::RecordSet"
+Properties:
+  AliasTarget:
+    DNSName:
+      Fn::GetAtt:
+        - CloudFrontDistribution
+        - DomainName
+    HostedZoneId: ${file(config.${self:provider.stage}.yml):hostedZoneId}
+  HostedZoneName: ${file(config.${self:provider.stage}.yml):hostedZoneName}.
+  Name: ${file(config.${self:provider.stage}.yml):hostedZoneName}.
+  Type: 'A'
+```
+
+then the second file:
+
+`dns_record2.yml`
+
+should contain:
+
+```
+---
+Type: "AWS::Route53::RecordSet"
+Properties:
+  AliasTarget:
+    DNSName:
+      Fn::GetAtt:
+        - CloudFrontDistribution
+        - DomainName
+    HostedZoneId: ${file(config.${self:provider.stage}.yml):hostedZoneId}
+  HostedZoneName: ${file(config.${self:provider.stage}.yml):hostedZoneName}.
+  Name: www.serverlessapp.net.
+  Type: 'A'
+```
+
+you'll see that the `Name` value is really the only difference here.
+
+link it all up in the serverless.yml file by adding these three lines to the resources block:
+
+```
+CloudFrontDistribution: ${file(resources/cf_distro.yml)}
+DnsRecord: ${file(resources/dns_record.yml)}
+DnsRecord2: ${file(resources/dns_record.2.yml)}
+```
+
+we're also going to add one new section to our resources block. This is to make some data available to our plugin we installed earlier.
+
+add 
+
+```
+Outputs:
+  CloudFrontDistributionOutput:
+    Value:
+      Fn::GetAtt:
+        - CloudFrontDistribution
+        - DomainName
+```
+
+so now your resources block should look like this:
+
+```
+resources:
+  Resources:
+    AppS3Bucket: ${file(resources/app_bucket.yml)}
+    AppS3BucketPolicy: ${file(resources/app_bucket_policy.yml)}
+    StaticSiteCert: ${file(resources/ssl_certificate.yml)}
+    CloudFrontDistribution: ${file(resources/cf_distro.yml)}
+    DnsRecord: ${file(resources/dns_record.yml)}
+    DnsRecord2: ${file(resources/dns_record.2.yml)}
+
+  Outputs:
+    CloudFrontDistributionOutput:
+      Value:
+        Fn::GetAtt:
+          - CloudFrontDistribution
+          - DomainName
+```
+deploy now...
+
+<p align="center"><a href="/serverless/frontend/2018/10/11/10-draw-the-rest-of-the-fucking-owl.html">Continue to Part 10</a></p>

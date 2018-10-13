@@ -1,0 +1,59 @@
+---
+layout: post
+title:  "Part 6 - Free SSL - INCOMPLETE"
+date:   2018-10-11 14:49:10 -0400
+categories: Serverless Frontend
+---
+<img style="float: right; padding:10px 0 10px 10px" src="/images/free.jpg">
+one of the nice things about using aws is that we can use free ssl for public sites. lets set up a new ssl certificate as part of our project here.
+
+first we need to make sure we  have a hosted zone on route53. this is still poaaible if your dns is hosted elsewhere but for this tutorial Im keeping it all in house. 
+
+--- section on dns zone ---
+
+once your zone is all set up, create a new file in your resources directory: `ssl_certificate.yml' and place the following yml in it:
+
+```
+---
+Type: AWS::CertificateManager::Certificate
+Properties:
+  DomainName: ${file(config.${self:provider.stage}.yml):domainName}
+  SubjectAlternativeNames:
+    - www.serverlessapp.net
+  ValidationMethod: DNS
+  DomainValidationOptions:
+  - DomainName: ${file(config.${self:provider.stage}.yml):domainName}
+    ValidationDomain: ${file(config.${self:provider.stage}.yml):hostedZoneName}
+  - DomainName: www.serverlessapp.net
+    ValidationDomain: ${file(config.${self:provider.stage}.yml):hostedZoneName}
+```
+
+By now you are familiar with the Type and Properties concept. You can see we're using the domain name we set earlier in our config file. I have opted to include a www subdomain as an alternate here (`SubjectAlternativeNames`) as well, so that is hardcoded.  In a future verison of this I may set it up to be more dynamic. Since Im not doing that today, I will probably be hardcoding my default stage to prod from here on out. 
+
+`ValidationMethod` is set to `DNS`... this will allow for really easy verification of the domain so the ssl certificate can be issued. Another option is `Email` ... as I mentioned above, you can do the certificate another way if you dont have a hosted zon for your domain in route53
+
+you will also see we are referencing a new config variable: `hostedZoneName`  this should be added to your config file like so:
+
+```
+hostedZoneName:serverlessapp.net
+```
+
+as shown above when creating the zone, we end up with the domain name value as the zone name.
+
+each domain name in the certificate will need to be verified independently so will need its own entry in the `DomainValidationOptions` array.
+
+`DomainName` is the actual domain name that is added to the ssl certificate and secured, `ValidationDomain` will, in cases like this, be the same value for all of them. 
+
+It's not difficult to manually create the certificate. If you do that, I believe you can use a wildcard if you choose to do so. I dont believe serverless framework currently supports that option out of the box. I'll note the changes later on if you are using a manually created certificate. IF so, just ignore this whole section.
+
+now that we have the definition, we need to add the cert to our resources in serverless.yml:
+
+StaticSiteCert: ${file(resources/ssl_certificate.yml)}
+
+Lets deploy again. I'll need to make a video of this process probably...
+
+-- do deploy stuff here ---
+
+
+<p align="center"><a href="/serverless/frontend/2018/10/11/07-now-it-places-the-markup-in-the-basket.html">Continue to Part 7</a></p>
+

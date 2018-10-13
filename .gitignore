@@ -9,3 +9,8 @@ jspm_packages
 config.*.yml
 !config.example.yml
 src.*
+
+.vscode
+
+.sass-cache
+.jekyll-metadata
